@@ -17,7 +17,7 @@ Resources:
     ProdVPCIGW:
         Type: AWS::EC2::InternetGateway
 
-    AttachGateway:
+    AttachIGW:
         Type: AWS::EC2::VPCGatewayAttachment
         Properties:
             VpcId: !Ref ProdVPC
