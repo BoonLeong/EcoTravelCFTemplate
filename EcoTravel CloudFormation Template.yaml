@@ -371,3 +371,119 @@ Resources:
             PortRange:
                 From: 3306
                 To: 3306
+
+    # Production VPC Security Groups
+    ALBSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: Restrict inbound traffic
+            VpcId: !Ref ProdVPC
+            SecurityGroupIngress:
+                - IpProtocol: tcp
+                  FromPort: 80
+                  ToPort: 80
+                  CidrIp: 0.0.0.0/0
+                - IpProtocol: tcp
+                  FromPort: 443
+                  ToPort: 443
+                  CidrIp: 0.0.0.0/0
+            SecurityGroupEgress:
+                - IpProtocol: -1
+                  FromPort: 0
+                  ToPort: 0
+                  CidrIp: 0.0.0.0/0
+            Tags:
+                - Key: Name
+                  Value: ALBSecurityGroup
+
+    BastionHostSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: Restrict inbound traffic
+            VpcId: !Ref ProdVPC
+            SecurityGroupIngress:
+                - IpProtocol: tcp
+                  FromPort: 22
+                  ToPort: 22
+                  CidrIp: 0.0.0.0/0  # Replace with authorized IP range
+            SecurityGroupEgress:
+                - IpProtocol: -1
+                  FromPort: 0
+                  ToPort: 0
+                  CidrIp: 0.0.0.0/0
+            Tags:
+                - Key: Name
+                  Value: BastionHostSecurityGroup
+
+    WebAppSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: Restrict inbound traffic
+            VpcId: !Ref ProdVPC
+            SecurityGroupIngress:
+                - IpProtocol: tcp
+                  FromPort: 80
+                  ToPort: 80
+                  SourceSecurityGroupId: !Ref ALBSecurityGroup
+                - IpProtocol: tcp
+                  FromPort: 443
+                  ToPort: 443
+                  SourceSecurityGroupId: !Ref ALBSecurityGroup
+                - IpProtocol: tcp
+                  FromPort: 22
+                  ToPort: 22
+                  SourceSecurityGroupId: !Ref BastionHostSecurityGroup
+            SecurityGroupEgress:
+                - IpProtocol: -1
+                  FromPort: 0
+                  ToPort: 0
+                  CidrIp: 0.0.0.0/0
+            Tags:
+                - Key: Name
+                  Value: WebAppSecurityGroup
+
+    DatabaseSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: Restrict inbound traffic
+            VpcId: !Ref ProdVPC
+            SecurityGroupIngress:
+                - IpProtocol: tcp
+                  FromPort: 3306
+                  ToPort: 3306
+                  SourceSecurityGroupId: !Ref BastionHostSecurityGroup
+            SecurityGroupEgress:
+                - IpProtocol: -1
+                  FromPort: 0
+                  ToPort: 0
+                  CidrIp: 0.0.0.0/0
+            Tags:
+                - Key: Name
+                  Value: DatabaseSecurityGroup
+
+    WebAppSecurityGroupIngressMySQLFromDatabase:
+        Type: AWS::EC2::SecurityGroupIngress
+        Properties:
+            GroupId: !Ref WebAppSecurityGroup
+            IpProtocol: tcp
+            FromPort: 3306
+            ToPort: 3306
+            SourceSecurityGroupId: !Ref DatabaseSecurityGroup
+
+    BastionHostSecurityGroupIngressMySQLFromDatabase:
+        Type: AWS::EC2::SecurityGroupIngress
+        Properties:
+            GroupId: !Ref BastionHostSecurityGroup
+            IpProtocol: tcp
+            FromPort: 3306
+            ToPort: 3306
+            SourceSecurityGroupId: !Ref DatabaseSecurityGroup
+
+    DatabaseSecurityGroupIngressMySQLFromDatabase:
+        Type: AWS::EC2::SecurityGroupIngress
+        Properties:
+            GroupId: !Ref DatabaseSecurityGroup
+            IpProtocol: tcp
+            FromPort: 3306
+            ToPort: 3306
+            SourceSecurityGroupId: !Ref DatabaseSecurityGroup
