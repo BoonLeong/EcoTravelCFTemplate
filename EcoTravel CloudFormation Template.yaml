@@ -13,6 +13,7 @@ Resources:
                 - Key: Name
                   Value: ProdVPC
 
+    # Production VPC IGW
     ProdVPCIGW:
         Type: AWS::EC2::InternetGateway
 
@@ -22,6 +23,7 @@ Resources:
             VpcId: !Ref ProdVPC
             InternetGatewayId: !Ref ProdVPCIGW
     
+    # Production VPC Subnetting
     ProdPublicSubnet1:
         Type: AWS::EC2::Subnet
         Properties:
@@ -66,6 +68,7 @@ Resources:
                 - Key: Name
                   Value: ProdPrivateSubnet2
 
+    # Production VPC Routing
     ProdPublicRT:
         Type: AWS::EC2::RouteTable
         Properties:
@@ -93,6 +96,7 @@ Resources:
             SubnetId: !Ref ProdPublicSubnet2
             RouteTableId: !Ref ProdPublicRT
 
+    # Production VPC Public Subnet ACL
     ProdPublicSubnetACL:
         Type: AWS::EC2::NetworkAcl
         Properties:
@@ -100,6 +104,18 @@ Resources:
             Tags:
                 - Key: Name
                   Value: ProdPublicSubnetACL
+
+    ProdPublicSubnet1AclAssociation:
+        Type: AWS::EC2::SubnetNetworkAclAssociation
+        Properties:
+            SubnetId: !Ref ProdPublicSubnet1
+            NetworkAclId: !Ref ProdPublicSubnetACL
+
+    ProdPublicSubnet2AclAssociation:
+        Type: AWS::EC2::SubnetNetworkAclAssociation
+        Properties:
+            SubnetId: !Ref ProdPublicSubnet2
+            NetworkAclId: !Ref ProdPublicSubnetACL
     
     ProdPublicSubnetInboundHTTP:
         Type: AWS::EC2::NetworkAclEntry
@@ -231,6 +247,7 @@ Resources:
                 From: 3306
                 To: 3306
 
+    # Production VPC Private Subnet ACL
     ProdPrivateSubnetACL:
         Type: AWS::EC2::NetworkAcl
         Properties:
@@ -238,6 +255,18 @@ Resources:
             Tags:
                 - Key: Name
                   Value: ProdPrivateSubnetACL
+
+    ProdPrivateSubnet1AclAssociation:
+        Type: AWS::EC2::SubnetNetworkAclAssociation
+        Properties:
+            SubnetId: !Ref ProdPrivateSubnet1
+            NetworkAclId: !Ref ProdPrivateSubnetACL
+
+    ProdPrivateSubnet2AclAssociation:
+        Type: AWS::EC2::SubnetNetworkAclAssociation
+        Properties:
+            SubnetId: !Ref ProdPrivateSubnet2
+            NetworkAclId: !Ref ProdPrivateSubnetACL
 
     ProdPrivateSubnetInboundMySQLFromPublicSubnet1:
         Type: AWS::EC2::NetworkAclEntry
