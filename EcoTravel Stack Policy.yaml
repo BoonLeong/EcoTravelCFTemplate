@@ -1,0 +1,7 @@
+Statement:
+  - Effect: Deny
+    Action: Update:*
+    Resource: 'arn:aws:cloudformation:region:account-id:stack/stack-name/*'
+    Condition:
+      StringEquals:
+        aws:requestTag/LogicalResourceId: ProdVPC
